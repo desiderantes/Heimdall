@@ -22,17 +22,17 @@
 #include <stdio.h>
 
 // Heimdall
-#include "Arguments.h"
-#include "BridgeManager.h"
-#include "EnableTFlashPacket.h"
-#include "EndModemFileTransferPacket.h"
-#include "EndPhoneFileTransferPacket.h"
-#include "FlashAction.h"
-#include "Heimdall.h"
-#include "Interface.h"
-#include "SessionSetupResponse.h"
-#include "TotalBytesPacket.h"
-#include "Utility.h"
+#include "heimdall/Arguments.h"
+#include "heimdall/BridgeManager.h"
+#include "heimdall/EnableTFlashPacket.h"
+#include "heimdall/EndModemFileTransferPacket.h"
+#include "heimdall/EndPhoneFileTransferPacket.h"
+#include "heimdall/FlashAction.h"
+#include "heimdall/Heimdall.h"
+#include "heimdall/Interface.h"
+#include "heimdall/SessionSetupResponse.h"
+#include "heimdall/TotalBytesPacket.h"
+#include "heimdall/Utility.h"
 
 using namespace std;
 using namespace libpit;
@@ -147,19 +147,19 @@ static void closeFiles(vector<PartitionFile>& partitionFiles, FILE *& pitFile)
 
 static bool sendTotalTransferSize(BridgeManager *bridgeManager, const vector<PartitionFile>& partitionFiles, FILE *pitFile, bool repartition)
 {
-	unsigned long totalBytes = 0;
+	uint64_t totalBytes = 0;
 
 	for (vector<PartitionFile>::const_iterator it = partitionFiles.begin(); it != partitionFiles.end(); it++)
 	{
 		FileSeek(it->file, 0, SEEK_END);
-		totalBytes += (unsigned long)FileTell(it->file);
+		totalBytes += (uint64_t)FileTell(it->file);
 		FileRewind(it->file);
 	}
 
 	if (repartition)
 	{
 		FileSeek(pitFile, 0, SEEK_END);
-		totalBytes += (unsigned long)FileTell(pitFile);
+		totalBytes += (uint64_t)FileTell(pitFile);
 		FileRewind(pitFile);
 	}
 
@@ -202,7 +202,7 @@ static bool setupPartitionFlashInfo(const vector<PartitionFile>& partitionFiles,
 		const PitEntry *pitEntry = nullptr;
 
 		// Was the argument a partition identifier?
-		unsigned int partitionIdentifier;
+		uint32_t partitionIdentifier;
 
 		if (Utility::ParseUnsignedInt(partitionIdentifier, it->argumentName) == kNumberParsingStatusSuccess)
 		{
@@ -320,10 +320,10 @@ static PitData *getPitData(BridgeManager *bridgeManager, FILE *pitFile, bool rep
 		// Load the local pit file into memory.
 
 		FileSeek(pitFile, 0, SEEK_END);
-		unsigned long localPitFileSize = (unsigned long)FileTell(pitFile);
+		uint64_t localPitFileSize = (uint64_t)FileTell(pitFile);
 		FileRewind(pitFile);
 
-		unsigned char *pitFileBuffer = new unsigned char[localPitFileSize];
+		uint8_t *pitFileBuffer = new uint8_t[localPitFileSize];
 		memset(pitFileBuffer, 0, localPitFileSize);
 
 		int dataRead = fread(pitFileBuffer, 1, localPitFileSize, pitFile);
@@ -354,7 +354,7 @@ static PitData *getPitData(BridgeManager *bridgeManager, FILE *pitFile, bool rep
 	else
 	{
 		// If we're not repartitioning then we need to retrieve the device's PIT file and unpack it.
-		unsigned char *pitFileBuffer;
+		uint8_t *pitFileBuffer;
 
 		if (bridgeManager->DownloadPitFile(&pitFileBuffer) == 0)
 			return (nullptr);
@@ -398,7 +398,7 @@ static bool enableTFlash(BridgeManager *bridgeManager)
 
 	SessionSetupResponse *enableTFlashResponse = new SessionSetupResponse();
 	success = bridgeManager->ReceivePacket(enableTFlashResponse, 5000);
-	unsigned int result = enableTFlashResponse->GetResult();
+	uint32_t result = enableTFlashResponse->GetResult();
 	delete enableTFlashResponse;
 
 	if (!success)

@@ -24,8 +24,8 @@
 #include <stdlib.h>
 
 // Heimdall
-#include "Heimdall.h"
-#include "Utility.h"
+#include "heimdall/Heimdall.h"
+#include "heimdall/Utility.h"
 
 using namespace Heimdall;
 
@@ -60,12 +60,12 @@ NumberParsingStatus Utility::ParseInt(int &intValue, const char *string, int bas
 	return (kNumberParsingStatusSuccess);
 }
 
-NumberParsingStatus Utility::ParseUnsignedInt(unsigned int &uintValue, const char *string, int base)
+NumberParsingStatus Utility::ParseUnsignedInt(uint32_t &uintValue, const char *string, int base)
 {
     errno = 0;
 
     char *end;
-    unsigned long ulongValue = strtoul(string, &end, base);
+    uint64_t ulongValue = strtoul(string, &end, base);
 
 	if (*string == '\0' || *end != '\0')
 	{

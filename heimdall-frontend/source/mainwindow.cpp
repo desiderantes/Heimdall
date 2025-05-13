@@ -105,7 +105,7 @@ void MainWindow::UpdateUnusedPartitionIds(void)
 	unusedPartitionIds.clear();
 
 	// Initially populate unusedPartitionIds with all possible partition IDs. 
-	for (unsigned int i = 0; i < currentPitData.GetEntryCount(); i++)
+	for (uint32_t i = 0; i < currentPitData.GetEntryCount(); i++)
 	{
 		const PitEntry *pitEntry = currentPitData.GetEntry(i);
 
@@ -125,7 +125,7 @@ bool MainWindow::ReadPit(QFile *file)
 	if(!file->open(QIODevice::ReadOnly))
 		return (false);
 
-	unsigned char *buffer = new unsigned char[file->size()];
+	uint8_t *buffer = new uint8_t[file->size()];
 
 	file->read(reinterpret_cast<char *>(buffer), file->size());
 	file->close();
@@ -643,7 +643,7 @@ void MainWindow::SelectPartitionName(int index)
 {
 	if (!populatingPartitionNames && index != -1 && index != unusedPartitionIds.length())
 	{
-		unsigned int newPartitionIndex = unusedPartitionIds[index];
+		uint32_t newPartitionIndex = unusedPartitionIds[index];
 		unusedPartitionIds.removeAt(index);
 
 		FileInfo& fileInfo = workingPackageData.GetFirmwareInfo().GetFileInfos()[partitionsListWidget->currentRow()];

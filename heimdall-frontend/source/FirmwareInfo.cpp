@@ -249,7 +249,7 @@ FileInfo::FileInfo()
 {
 }
 
-FileInfo::FileInfo(unsigned int partitionId, const QString& filename)
+FileInfo::FileInfo(uint32_t partitionId, const QString& filename)
 {
 	this->partitionId = partitionId;
 	this->filename = filename;

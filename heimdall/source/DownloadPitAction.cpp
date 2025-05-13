@@ -22,11 +22,11 @@
 #include <stdio.h>
 
 // Heimdall
-#include "Arguments.h"
-#include "BridgeManager.h"
-#include "DownloadPitAction.h"
-#include "Heimdall.h"
-#include "Interface.h"
+#include "heimdall/Arguments.h"
+#include "heimdall/BridgeManager.h"
+#include "heimdall/DownloadPitAction.h"
+#include "heimdall/Heimdall.h"
+#include "heimdall/Interface.h"
 
 using namespace std;
 using namespace Heimdall;
@@ -141,7 +141,7 @@ int DownloadPitAction::Execute(int argc, char **argv)
 		return (1);
 	}
 
-	unsigned char *pitBuffer;
+	uint8_t *pitBuffer;
 	int fileSize = bridgeManager->DownloadPitFile(&pitBuffer);
 
 	bool success = true;

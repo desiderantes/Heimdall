@@ -22,11 +22,11 @@
 #include <stdio.h>
 
 // Heimdall
-#include "Arguments.h"
-#include "BridgeManager.h"
-#include "Heimdall.h"
-#include "Interface.h"
-#include "PrintPitAction.h"
+#include "heimdall/Arguments.h"
+#include "heimdall/BridgeManager.h"
+#include "heimdall/Heimdall.h"
+#include "heimdall/Interface.h"
+#include "heimdall/PrintPitAction.h"
 
 using namespace std;
 using namespace libpit;
@@ -134,11 +134,11 @@ int PrintPitAction::Execute(int argc, char **argv)
 		// Print PIT from file; there's no need for a BridgeManager.
 
 		FileSeek(localPitFile, 0, SEEK_END);
-		unsigned int localPitFileSize = (unsigned int)FileTell(localPitFile);
+		uint32_t localPitFileSize = (uint32_t)FileTell(localPitFile);
 		FileRewind(localPitFile);
 
 		// Load the local pit file into memory.
-		unsigned char *pitFileBuffer = new unsigned char[localPitFileSize];
+		uint8_t *pitFileBuffer = new uint8_t[localPitFileSize];
 		(void)fread(pitFileBuffer, 1, localPitFileSize, localPitFile);
 		FileClose(localPitFile);
 
@@ -165,7 +165,7 @@ int PrintPitAction::Execute(int argc, char **argv)
 			return (1);
 		}
 		
-		unsigned char *devicePit;
+		uint8_t *devicePit;
 		bool success = bridgeManager->DownloadPitFile(&devicePit) != 0;
 
 		if (success)

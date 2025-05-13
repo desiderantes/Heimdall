@@ -19,7 +19,7 @@
  THE SOFTWARE.*/
 
 // libpit
-#include "libpit.h"
+#include "libpit/libpit.h"
 
 using namespace libpit;
 
@@ -81,18 +81,18 @@ PitData::PitData()
 
 PitData::~PitData()
 {
-	for (unsigned int i = 0; i < entries.size(); i++)
-		delete entries[i];
+	for (auto & entrie : entries)
+		delete entrie;
 }
 
-bool PitData::Unpack(const unsigned char *data)
+bool PitData::Unpack(const uint8_t *data)
 {
 	if (PitData::UnpackInteger(data, 0) != PitData::kFileIdentifier)
 		return (false);
 
 	// Remove existing entries
-	for (unsigned int i = 0; i < entries.size(); i++)
-		delete entries[i];
+	for (auto & entrie : entries)
+		delete entrie;
 
 	entryCount = PitData::UnpackInteger(data, 4);
 
@@ -110,10 +110,10 @@ bool PitData::Unpack(const unsigned char *data)
 	unknown7 = PitData::UnpackShort(data, 24);
 	unknown8 = PitData::UnpackShort(data, 26);
 
-	unsigned int integerValue;
-	unsigned int entryOffset;
+	uint32_t integerValue;
+	uint32_t entryOffset;
 
-	for (unsigned int i = 0; i < entryCount; i++)
+	for (uint32_t i = 0; i < entryCount; i++)
 	{
 		entryOffset = PitData::kHeaderDataSize + i * PitEntry::kDataSize;
 
@@ -154,7 +154,7 @@ bool PitData::Unpack(const unsigned char *data)
 	return (true);
 }
 
-void PitData::Pack(unsigned char *data) const
+void PitData::Pack(uint8_t *data) const
 {
 	PitData::PackInteger(data, 0, PitData::kFileIdentifier);
 
@@ -174,7 +174,7 @@ void PitData::Pack(unsigned char *data) const
 
 	int entryOffset;
 
-	for (unsigned int i = 0; i < entryCount; i++)
+	for (uint32_t i = 0; i < entryCount; i++)
 	{
 		entryOffset = PitData::kHeaderDataSize + i * PitEntry::kDataSize;
 
@@ -205,7 +205,7 @@ bool PitData::Matches(const PitData *otherPitData) const
 		&& unknown3 == otherPitData->unknown3 && unknown4 == otherPitData->unknown4 && unknown5 == otherPitData->unknown5
 		&& unknown6 == otherPitData->unknown6 && unknown7 == otherPitData->unknown7 && unknown8 == otherPitData->unknown8)
 	{
-		for (unsigned int i = 0; i < entryCount; i++)
+		for (uint32_t i = 0; i < entryCount; i++)
 		{
 			if (!entries[i]->Matches(otherPitData->entries[i]))
 				return (false);
@@ -235,28 +235,28 @@ void PitData::Clear(void)
 	unknown7 = 0;
 	unknown8 = 0;
 
-	for (unsigned int i = 0; i < entries.size(); i++)
-		delete entries[i];
+	for (auto & entrie : entries)
+		delete entrie;
 
 	entries.clear();
 }
 
-PitEntry *PitData::GetEntry(unsigned int index)
+PitEntry *PitData::GetEntry(uint32_t index)
 {
 	return (entries[index]);
 }
 
-const PitEntry *PitData::GetEntry(unsigned int index) const
+const PitEntry *PitData::GetEntry(uint32_t index) const
 {
 	return (entries[index]);
 }
 
 PitEntry *PitData::FindEntry(const char *partitionName)
 {
-	for (unsigned int i = 0; i < entries.size(); i++)
+	for (auto & entrie : entries)
 	{
-		if (entries[i]->IsFlashable() && strcmp(entries[i]->GetPartitionName(), partitionName) == 0)
-			return (entries[i]);
+		if (entrie->IsFlashable() && strcmp(entrie->GetPartitionName(), partitionName) == 0)
+			return entrie;
 	}
 
 	return (nullptr);
@@ -264,32 +264,32 @@ PitEntry *PitData::FindEntry(const char *partitionName)
 
 const PitEntry *PitData::FindEntry(const char *partitionName) const
 {
-	for (unsigned int i = 0; i < entries.size(); i++)
+	for (auto entrie : entries)
 	{
-		if (entries[i]->IsFlashable() && strcmp(entries[i]->GetPartitionName(), partitionName) == 0)
-			return (entries[i]);
+		if (entrie->IsFlashable() && strcmp(entrie->GetPartitionName(), partitionName) == 0)
+			return entrie;
 	}
 
 	return (nullptr);
 }
 
-PitEntry *PitData::FindEntry(unsigned int partitionIdentifier)
+PitEntry *PitData::FindEntry(uint32_t partitionIdentifier)
 {
-	for (unsigned int i = 0; i < entries.size(); i++)
+	for (auto & entrie : entries)
 	{
-		if (entries[i]->IsFlashable() && entries[i]->GetIdentifier() == partitionIdentifier)
-			return (entries[i]);
+		if (entrie->IsFlashable() && entrie->GetIdentifier() == partitionIdentifier)
+			return entrie;
 	}
 
 	return (nullptr);
 }
 
-const PitEntry *PitData::FindEntry(unsigned int partitionIdentifier) const
+const PitEntry *PitData::FindEntry(uint32_t partitionIdentifier) const
 {
-	for (unsigned int i = 0; i < entries.size(); i++)
+	for (auto entrie : entries)
 	{
-		if (entries[i]->IsFlashable() && entries[i]->GetIdentifier() == partitionIdentifier)
-			return (entries[i]);
+		if (entrie->IsFlashable() && entrie->GetIdentifier() == partitionIdentifier)
+			return entrie;
 	}
 
 	return (nullptr);

@@ -24,16 +24,17 @@
 #include <stdio.h>
 
 // Heimdall
-#include "ClosePcScreenAction.h"
-#include "DetectAction.h"
-#include "DownloadPitAction.h"
-#include "FlashAction.h"
-#include "HelpAction.h"
-#include "InfoAction.h"
-#include "Heimdall.h"
-#include "Interface.h"
-#include "PrintPitAction.h"
-#include "VersionAction.h"
+#include "heimdall/ClosePcScreenAction.h"
+#include "heimdall/DetectAction.h"
+#include "heimdall/DownloadPitAction.h"
+#include "heimdall/FlashAction.h"
+#include "heimdall/HelpAction.h"
+#include "heimdall/InfoAction.h"
+#include "heimdall/Heimdall.h"
+#include "heimdall/Interface.h"
+#include "heimdall/PrintPitAction.h"
+#include "heimdall/VersionAction.h"
+#include "heimdall_config.h"
 
 using namespace std;
 using namespace libpit;
@@ -42,7 +43,6 @@ using namespace Heimdall;
 map<string, Interface::ActionInfo> actionMap;
 bool stdoutErrors = false;
 		
-const char *version = "v1.4.2";
 const char *actionUsage = "Usage: heimdall <action> <action arguments>\n";
 
 const char *releaseInfo = "Heimdall %s\n\n\
@@ -176,7 +176,7 @@ void Interface::PrintErrorSameLine(const char *format, ...)
 
 void Interface::PrintVersion(void)
 {
-	Interface::Print("%s\n", version);
+	Interface::Print("%s\n", HEIMDALL_VERSION);
 }
 
 void Interface::PrintUsage(void)
@@ -185,18 +185,18 @@ void Interface::PrintUsage(void)
 
 	Interface::Print(actionUsage);
 
-	for (map<string, ActionInfo>::const_iterator it = actionMap.begin(); it != actionMap.end(); it++)
-		Interface::Print("\n%s", it->second.usage);
+	for (const auto &[key, val] : actionMap)
+		Interface::Print("\n%s", val.usage);
 }
 
 void Interface::PrintReleaseInfo(void)
 {
-	Interface::Print(releaseInfo, version);
+	Interface::Print(releaseInfo, HEIMDALL_VERSION);
 }
 
 void Interface::PrintFullInfo(void)
 {
-	Interface::Print(releaseInfo, version);
+	Interface::Print(releaseInfo, HEIMDALL_VERSION);
 	Interface::Print(extraInfo);
 }
 
@@ -218,7 +218,7 @@ void Interface::PrintPit(const PitData *pitData)
 	Interface::Print("Unknown 7: %d\n", pitData->GetUnknown7());
 	Interface::Print("Unknown 8: %d\n", pitData->GetUnknown8());
 
-	for (unsigned int i = 0; i < pitData->GetEntryCount(); i++)
+	for (uint32_t i = 0; i < pitData->GetEntryCount(); i++)
 	{
 		const PitEntry *entry = pitData->GetEntry(i);
 

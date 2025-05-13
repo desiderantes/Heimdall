@@ -107,16 +107,16 @@ bool Packaging::ExtractTar(QTemporaryFile& tarFile, PackageData *packageData)
 			int checksum = 0;
 
 			for (char *bufferIndex = tarHeader.buffer; bufferIndex < tarHeader.fields.checksum; bufferIndex++)
-				checksum += static_cast<unsigned char>(*bufferIndex);
+				checksum += static_cast<uint8_t>(*bufferIndex);
 
 			checksum += 8 * ' ';
-			checksum += static_cast<unsigned char>(tarHeader.fields.typeFlag);
+			checksum += static_cast<uint8_t>(tarHeader.fields.typeFlag);
 
 			// Both the TAR and USTAR formats have terrible documentation, it's not clear if the following code is required.
 			/*if (ustarFormat)
 			{
 				for (char *bufferIndex = tarHeader.fields.linkName; bufferIndex < tarHeader.fields.prefix + 155; bufferIndex++)
-					checksum += static_cast<unsigned char>(*bufferIndex);
+					checksum += static_cast<uint8_t>(*bufferIndex);
 			}*/
 
 			bool parsed = false;
@@ -253,7 +253,7 @@ bool Packaging::WriteTarEntry(const QString& filePath, QTemporaryFile *tarFile, 
 
 	strcpy(tarHeader.fields.name, utfFilename.constData());
 		
-	unsigned int mode = 0;
+	uint32_t mode = 0;
 
 	QFile::Permissions permissions = file.permissions();
 
@@ -311,7 +311,7 @@ bool Packaging::WriteTarEntry(const QString& filePath, QTemporaryFile *tarFile, 
 	memset(tarHeader.fields.checksum, ' ', 8);
 		
 	for (int i = 0; i < TarHeader::kTarHeaderLength; i++)
-		checksum += static_cast<unsigned char>(tarHeader.buffer[i]);
+		checksum += static_cast<uint8_t>(tarHeader.buffer[i]);
 
 	sprintf(tarHeader.fields.checksum, "%07o", checksum);
 
@@ -475,10 +475,9 @@ bool Packaging::CreateTar(const FirmwareInfo& firmwareInfo, QTemporaryFile *tarF
 	progressDialog.close();
 
 	// Write two empty blocks to signify the end of the archive.
-	char emptyEntry[TarHeader::kBlockLength];
-	memset(emptyEntry, 0, TarHeader::kBlockLength);
+	char emptyEntry[TarHeader::kBlockLength] = {};
 
-	tarFile->write(emptyEntry, TarHeader::kBlockLength);
+        tarFile->write(emptyEntry, TarHeader::kBlockLength);
 	tarFile->write(emptyEntry, TarHeader::kBlockLength);
 
 	tarFile->close();
@@ -672,7 +671,7 @@ QString Packaging::ClashlessFilename(const QList<FileInfo>& fileInfos, int fileI
 		lastSlash = fileInfos[fileInfoIndex].GetFilename().lastIndexOf('\\');
 
 	QString filename = fileInfos[fileInfoIndex].GetFilename().mid(lastSlash + 1);
-	unsigned int renameIndex = 0;
+	uint32_t renameIndex = 0;
 
 	// Check for name clashes
 	for (int i = 0; i < fileInfoIndex; i++)
@@ -705,7 +704,7 @@ QString Packaging::ClashlessFilename(const QList<FileInfo>& fileInfos, int fileI
 			shortFilename = filename;
 		}
 
-		unsigned int renameIndexOffset = 0;
+		uint32_t renameIndexOffset = 0;
 		bool validIndexOffset = true;
 
 		// Before we append a rename index we must ensure it doesn't produce further collisions.
@@ -736,7 +735,7 @@ QString Packaging::ClashlessFilename(const QList<FileInfo>& fileInfos, int fileI
 					
 					if (renameExp.lastIndexIn(shortOtherFilename) == shortFilename.length())
 					{
-						unsigned int trailingInteger = shortOtherFilename.mid(shortFilename.length() + 1).toUInt(&validIndexOffset);
+						uint32_t trailingInteger = shortOtherFilename.mid(shortFilename.length() + 1).toUInt(&validIndexOffset);
 
 						if (!validIndexOffset)
 							break;
@@ -751,7 +750,7 @@ QString Packaging::ClashlessFilename(const QList<FileInfo>& fileInfos, int fileI
 		if (validIndexOffset)
 		{
 			// Ensure renaming won't involve integer overflow!
-			if (renameIndex > static_cast<unsigned int>(-1) - renameIndexOffset)
+			if (renameIndex > static_cast<uint32_t>(-1) - renameIndexOffset)
 				validIndexOffset = false;
 		}
 
@@ -772,7 +771,7 @@ QString Packaging::ClashlessFilename(const QList<FileInfo>& fileInfos, int fileI
 			{
 				renamePrefix.append(QChar('+'));
 
-				for (unsigned int i = 0; i < static_cast<unsigned int>(-1); i++)
+				for (uint32_t i = 0; i < static_cast<uint32_t>(-1); i++)
 				{
 					filename = shortFilename + renamePrefix + QString::number(i) + fileType;
 
@@ -806,7 +805,7 @@ QString Packaging::ClashlessFilename(const QList<FileInfo>& fileInfos, int fileI
 
 QString Packaging::ClashlessFilename(const QList<FileInfo>& fileInfos, const QString& filename)
 {
-	unsigned int renameIndex = 0;
+	uint32_t renameIndex = 0;
 
 	// Check for name clashes
 	for (int i = 0; i < fileInfos.length(); i++)
@@ -838,7 +837,7 @@ QString Packaging::ClashlessFilename(const QList<FileInfo>& fileInfos, const QSt
 			shortFilename = filename;
 		}
 
-		unsigned int renameIndexOffset = 0;
+		uint32_t renameIndexOffset = 0;
 		bool validIndexOffset = true;
 
 		// Before we append a rename index we must ensure it doesn't produce further collisions.
@@ -869,7 +868,7 @@ QString Packaging::ClashlessFilename(const QList<FileInfo>& fileInfos, const QSt
 					
 					if (renameExp.lastIndexIn(shortOtherFilename) == shortFilename.length())
 					{
-						unsigned int trailingInteger = shortOtherFilename.mid(shortFilename.length() + 1).toUInt(&validIndexOffset);
+						uint32_t trailingInteger = shortOtherFilename.mid(shortFilename.length() + 1).toUInt(&validIndexOffset);
 
 						if (!validIndexOffset)
 							break;
@@ -884,7 +883,7 @@ QString Packaging::ClashlessFilename(const QList<FileInfo>& fileInfos, const QSt
 		if (validIndexOffset)
 		{
 			// Ensure renaming won't involve integer overflow!
-			if (renameIndex > static_cast<unsigned int>(-1) - renameIndexOffset)
+			if (renameIndex > static_cast<uint32_t>(-1) - renameIndexOffset)
 				validIndexOffset = false;
 		}
 

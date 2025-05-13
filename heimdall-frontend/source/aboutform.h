@@ -43,7 +43,7 @@ namespace HeimdallFrontend
 
 		public:
 
-			explicit AboutForm(QWidget *parent = 0);
+			explicit AboutForm(QWidget *parent = nullptr);
 
 		public slots:
 

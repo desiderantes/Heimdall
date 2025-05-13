@@ -117,23 +117,23 @@ namespace HeimdallFrontend
 	{
 		private:
 
-			unsigned int partitionId;
+			uint32_t partitionId;
 			QString filename;
 
 		public:
 
 			FileInfo();
-			FileInfo(unsigned int partitionId, const QString& filename);
+			FileInfo(uint32_t partitionId, const QString& filename);
 
 			bool ParseXml(QXmlStreamReader& xml);
 			void WriteXml(QXmlStreamWriter& xml, const QString& filename) const;
 
-			unsigned int GetPartitionId(void) const
+			uint32_t GetPartitionId(void) const
 			{
 				return (partitionId);
 			}
 
-			void SetPartitionId(unsigned int partitionId)
+			void SetPartitionId(uint32_t partitionId)
 			{
 				this->partitionId = partitionId;
 			}

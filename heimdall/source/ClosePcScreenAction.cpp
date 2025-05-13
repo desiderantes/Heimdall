@@ -19,11 +19,11 @@
  THE SOFTWARE.*/
 
 // Heimdall
-#include "Arguments.h"
-#include "BridgeManager.h"
-#include "ClosePcScreenAction.h"
-#include "Heimdall.h"
-#include "Interface.h"
+#include "heimdall/Arguments.h"
+#include "heimdall/BridgeManager.h"
+#include "heimdall/ClosePcScreenAction.h"
+#include "heimdall/Heimdall.h"
+#include "heimdall/Interface.h"
 
 using namespace std;
 using namespace Heimdall;

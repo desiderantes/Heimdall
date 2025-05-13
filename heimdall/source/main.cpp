@@ -25,12 +25,12 @@
 #include <string>
 
 // libpit
-#include "libpit.h"
+#include "libpit/libpit.h"
 
 // Heimdall
-#include "Heimdall.h"
-#include "HelpAction.h"
-#include "Interface.h"
+#include "heimdall/Heimdall.h"
+#include "heimdall/HelpAction.h"
+#include "heimdall/Interface.h"
 
 using namespace std;
 using namespace Heimdall;

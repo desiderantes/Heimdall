@@ -19,9 +19,9 @@
  THE SOFTWARE.*/
 
 // Heimdall
-#include "Heimdall.h"
-#include "HelpAction.h"
-#include "Interface.h"
+#include "heimdall/Heimdall.h"
+#include "heimdall/HelpAction.h"
+#include "heimdall/Interface.h"
 
 using namespace Heimdall;
 

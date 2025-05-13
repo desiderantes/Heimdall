@@ -1,0 +1,1 @@
+option('enable_qt_frontend', type: 'feature', value: 'enabled', description: 'Compile the QT frontend')

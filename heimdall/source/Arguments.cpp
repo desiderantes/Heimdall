@@ -19,10 +19,10 @@
  THE SOFTWARE.*/
 
 // Heimdall
-#include "Arguments.h"
-#include "Heimdall.h"
-#include "Interface.h"
-#include "Utility.h"
+#include "heimdall/Arguments.h"
+#include "heimdall/Heimdall.h"
+#include "heimdall/Interface.h"
+#include "heimdall/Utility.h"
 
 using namespace std;
 using namespace Heimdall;
@@ -55,7 +55,7 @@ UnsignedIntegerArgument *UnsignedIntegerArgument::ParseArgument(const std::strin
 
 	if (++argi < argc)
 	{
-		unsigned int value;
+		uint32_t value;
 		
 		if (Utility::ParseUnsignedInt(value, argv[argi]) == kNumberParsingStatusSuccess)
 			unsignedIntegerArgument = new UnsignedIntegerArgument(name, value);
@@ -82,8 +82,8 @@ Arguments::Arguments(const map<string, ArgumentType>& argumentTypes, const map<s
 
 Arguments::~Arguments()
 {
-	for (vector<const Argument *>::const_iterator it = argumentVector.begin(); it != argumentVector.end(); it++)
-		delete *it;
+	for (auto it : argumentVector)
+		delete it;
 }
 
 bool Arguments::ParseArguments(int argc, char **argv, int argi)
@@ -103,7 +103,7 @@ bool Arguments::ParseArguments(int argc, char **argv, int argi)
 		{
 			// Short argument alias
 			string shortArgumentAlias = argumentName.substr(1);
-			map<string, string>::const_iterator shortAliasIt = shortArgumentAliases.find(shortArgumentAlias);
+			auto shortAliasIt = shortArgumentAliases.find(shortArgumentAlias);
 
 			if (shortAliasIt != shortArgumentAliases.end())
 			{
@@ -122,12 +122,12 @@ bool Arguments::ParseArguments(int argc, char **argv, int argi)
 			return (false);
 		}
 
-		map<string, ArgumentType>::const_iterator argumentTypeIt = argumentTypes.find(argumentName);
+		auto argumentTypeIt = argumentTypes.find(argumentName);
 
 		if (argumentTypeIt == argumentTypes.end())
 		{
 			// No argument with that name, maybe it's an alias...
-			map<string, string>::const_iterator aliasIt = argumentAliases.find(argumentName);
+			auto aliasIt = argumentAliases.find(argumentName);
 
 			if (aliasIt != argumentAliases.end())
 			{
@@ -140,11 +140,11 @@ bool Arguments::ParseArguments(int argc, char **argv, int argi)
 
 		// Handle wilcards
 		
-		unsigned int unsignedIntName;
+		uint32_t unsignedIntName;
 		
 		if (argumentTypeIt == argumentTypes.end())
 		{
-			// Look for the unsigned integer wildcard "%d".
+			// Look for the uint32_teger wildcard "%d".
 			if (Utility::ParseUnsignedInt(unsignedIntName, argumentName.c_str()) == kNumberParsingStatusSuccess)
 			{
 				argumentTypeIt = argumentTypes.find("%d");

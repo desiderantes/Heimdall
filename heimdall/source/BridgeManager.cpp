@@ -25,32 +25,32 @@
 #include <libusb.h>
 
 // Heimdall
-#include "BeginDumpPacket.h"
-#include "BeginSessionPacket.h"
-#include "BridgeManager.h"
-#include "DeviceTypePacket.h"
-#include "DumpPartFileTransferPacket.h"
-#include "DumpPartPitFilePacket.h"
-#include "DumpResponse.h"
-#include "EndModemFileTransferPacket.h"
-#include "EndPhoneFileTransferPacket.h"
-#include "EndPitFileTransferPacket.h"
-#include "EndSessionPacket.h"
-#include "FilePartSizePacket.h"
-#include "FileTransferPacket.h"
-#include "FlashPartFileTransferPacket.h"
-#include "FlashPartPitFilePacket.h"
-#include "InboundPacket.h"
-#include "Interface.h"
-#include "OutboundPacket.h"
-#include "PitFilePacket.h"
-#include "PitFileResponse.h"
-#include "ReceiveFilePartPacket.h"
-#include "ResponsePacket.h"
-#include "SendFilePartPacket.h"
-#include "SendFilePartResponse.h"
-#include "SessionSetupPacket.h"
-#include "SessionSetupResponse.h"
+#include "heimdall/BeginDumpPacket.h"
+#include "heimdall/BeginSessionPacket.h"
+#include "heimdall/BridgeManager.h"
+#include "heimdall/DeviceTypePacket.h"
+#include "heimdall/DumpPartFileTransferPacket.h"
+#include "heimdall/DumpPartPitFilePacket.h"
+#include "heimdall/DumpResponse.h"
+#include "heimdall/EndModemFileTransferPacket.h"
+#include "heimdall/EndPhoneFileTransferPacket.h"
+#include "heimdall/EndPitFileTransferPacket.h"
+#include "heimdall/EndSessionPacket.h"
+#include "heimdall/FilePartSizePacket.h"
+#include "heimdall/FileTransferPacket.h"
+#include "heimdall/FlashPartFileTransferPacket.h"
+#include "heimdall/FlashPartPitFilePacket.h"
+#include "heimdall/InboundPacket.h"
+#include "heimdall/Interface.h"
+#include "heimdall/OutboundPacket.h"
+#include "heimdall/PitFilePacket.h"
+#include "heimdall/PitFileResponse.h"
+#include "heimdall/ReceiveFilePartPacket.h"
+#include "heimdall/ResponsePacket.h"
+#include "heimdall/SendFilePartPacket.h"
+#include "heimdall/SendFilePartResponse.h"
+#include "heimdall/SessionSetupPacket.h"
+#include "heimdall/SessionSetupResponse.h"
 
 // Future versions of libusb will use usb_interface instead of interface.
 #ifndef usb_interface
@@ -80,16 +80,16 @@ int BridgeManager::FindDeviceInterface(void)
 	Interface::Print("Detecting device...\n");
 
 	struct libusb_device **devices;
-	int deviceCount = libusb_get_device_list(libusbContext, &devices);
+	ssize_t deviceCount = libusb_get_device_list(libusbContext, &devices);
 
-	for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++)
+	for (ssize_t deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++)
 	{
 		libusb_device_descriptor descriptor;
 		libusb_get_device_descriptor(devices[deviceIndex], &descriptor);
 
-		for (int i = 0; i < BridgeManager::kSupportedDeviceCount; i++)
+		for (auto supportedDevice : supportedDevices)
 		{
-			if (descriptor.idVendor == supportedDevices[i].vendorId && descriptor.idProduct == supportedDevices[i].productId)
+			if (descriptor.idVendor == supportedDevice.vendorId && descriptor.idProduct == supportedDevice.productId)
 			{
 				heimdallDevice = devices[deviceIndex];
 				libusb_ref_device(heimdallDevice);
@@ -126,7 +126,7 @@ int BridgeManager::FindDeviceInterface(void)
 
 	if (verbose)
 	{
-		unsigned char stringBuffer[128];
+		uint8_t stringBuffer[128];
 
 		if (libusb_get_string_descriptor_ascii(deviceHandle, deviceDescriptor.iManufacturer,
 			stringBuffer, 128) >= 0)
@@ -297,7 +297,7 @@ bool BridgeManager::InitialiseProtocol(void)
 {
 	Interface::Print("Initialising protocol...\n");
 
-	unsigned char dataBuffer[7];
+	uint8_t dataBuffer[7];
 
 	// Send "ODIN"
 	memcpy(dataBuffer, "ODIN", 4);
@@ -525,7 +525,7 @@ bool BridgeManager::BeginSession(void)
 	if (!ReceivePacket(&beginSessionResponse))
 		return (false);
 
-	unsigned int deviceDefaultPacketSize = beginSessionResponse.GetResult();
+	uint32_t deviceDefaultPacketSize = beginSessionResponse.GetResult();
 
 	Interface::Print("\nSome devices may take up to 2 minutes to respond.\nPlease be patient!\n\n");
 	Sleep(3000); // Give the user time to read the message.
@@ -590,7 +590,7 @@ bool BridgeManager::EndSession(bool reboot) const
 	{
 		Interface::Print("Rebooting device...\n");
 
-		EndSessionPacket *rebootDevicePacket = new EndSessionPacket(EndSessionPacket::kRequestRebootDevice);
+		auto *rebootDevicePacket = new EndSessionPacket(EndSessionPacket::kRequestRebootDevice);
 		bool success = SendPacket(rebootDevicePacket);
 		delete rebootDevicePacket;
 
@@ -601,7 +601,7 @@ bool BridgeManager::EndSession(bool reboot) const
 			return (false);
 		}
 
-		ResponsePacket *rebootDeviceResponse = new ResponsePacket(ResponsePacket::kResponseTypeEndSession);
+		auto *rebootDeviceResponse = new ResponsePacket(ResponsePacket::kResponseTypeEndSession);
 		success = ReceivePacket(rebootDeviceResponse);
 		delete rebootDeviceResponse;
 
@@ -616,7 +616,7 @@ bool BridgeManager::EndSession(bool reboot) const
 	return (true);
 }
 
-bool BridgeManager::SendBulkTransfer(unsigned char *data, int length, int timeout, bool retry) const
+bool BridgeManager::SendBulkTransfer(uint8_t *data, int length, int timeout, bool retry) const
 {
 	int dataTransferred;
 	int result = libusb_bulk_transfer(deviceHandle, outEndpoint, data, length, &dataTransferred, timeout);
@@ -653,12 +653,12 @@ bool BridgeManager::SendBulkTransfer(unsigned char *data, int length, int timeou
 	return (result == LIBUSB_SUCCESS && dataTransferred == length);
 }
 
-int BridgeManager::ReceiveBulkTransfer(unsigned char *data, int length, int timeout, bool retry) const
+int BridgeManager::ReceiveBulkTransfer(uint8_t *data, int length, int timeout, bool retry) const
 {
 	if (data == nullptr)
 	{
 		// HACK: It seems WinUSB ignores us when we try to read with length zero.
-		static unsigned char dummyData;
+		static uint8_t dummyData;
 		data = &dummyData;
 		length = 1;
 	}
@@ -768,7 +768,7 @@ bool BridgeManager::ReceivePacket(InboundPacket *packet, int timeout, int emptyT
 	return (unpacked);
 }
 
-bool BridgeManager::RequestDeviceType(unsigned int request, int *result) const
+bool BridgeManager::RequestDeviceType(uint32_t request, int *result) const
 {
 	DeviceTypePacket deviceTypePacket;
 	bool success = SendPacket(&deviceTypePacket);
@@ -795,7 +795,7 @@ bool BridgeManager::RequestDeviceType(unsigned int request, int *result) const
 
 bool BridgeManager::SendPitData(const PitData *pitData) const
 {
-	unsigned int pitBufferSize = pitData->GetPaddedSize();
+	uint32_t pitBufferSize = pitData->GetPaddedSize();
 
 	// Start file transfer
 	PitFilePacket *pitFilePacket = new PitFilePacket(PitFilePacket::kRequestFlash);
@@ -841,7 +841,7 @@ bool BridgeManager::SendPitData(const PitData *pitData) const
 
 	// Create packed in-memory PIT file
 
-	unsigned char *pitBuffer = new unsigned char[pitBufferSize];
+	uint8_t *pitBuffer = new uint8_t[pitBufferSize];
 	memset(pitBuffer, 0, pitBufferSize);
 
 	pitData->Pack(pitBuffer);
@@ -893,7 +893,7 @@ bool BridgeManager::SendPitData(const PitData *pitData) const
 	return (true);
 }
 
-int BridgeManager::ReceivePitFile(unsigned char **pitBuffer) const
+int BridgeManager::ReceivePitFile(uint8_t **pitBuffer) const
 {
 	*pitBuffer = nullptr;
 
@@ -912,7 +912,7 @@ int BridgeManager::ReceivePitFile(unsigned char **pitBuffer) const
 
 	PitFileResponse *pitFileResponse = new PitFileResponse();
 	success = ReceivePacket(pitFileResponse);
-	unsigned int fileSize = pitFileResponse->GetFileSize();
+	uint32_t fileSize = pitFileResponse->GetFileSize();
 	delete pitFileResponse;
 
 	if (!success)
@@ -921,14 +921,14 @@ int BridgeManager::ReceivePitFile(unsigned char **pitBuffer) const
 		return (0);
 	}
 
-	unsigned int transferCount = fileSize / ReceiveFilePartPacket::kDataSize;
+	uint32_t transferCount = fileSize / ReceiveFilePartPacket::kDataSize;
 	if (fileSize % ReceiveFilePartPacket::kDataSize != 0)
 		transferCount++;
 
-	unsigned char *buffer = new unsigned char[fileSize];
+	uint8_t *buffer = new uint8_t[fileSize];
 	int offset = 0;
 
-	for (unsigned int i = 0; i < transferCount; i++)
+	for (uint32_t i = 0; i < transferCount; i++)
 	{
 		DumpPartPitFilePacket *requestPacket = new DumpPartPitFilePacket(i);
 		success = SendPacket(requestPacket);
@@ -988,7 +988,7 @@ int BridgeManager::ReceivePitFile(unsigned char **pitBuffer) const
 	return (fileSize);
 }
 
-int BridgeManager::DownloadPitFile(unsigned char **pitBuffer) const
+int BridgeManager::DownloadPitFile(uint8_t **pitBuffer) const
 {
 	Interface::Print("Downloading device's PIT file...\n");
 
@@ -1004,7 +1004,7 @@ int BridgeManager::DownloadPitFile(unsigned char **pitBuffer) const
 	return (devicePitFileSize);
 }
 
-bool BridgeManager::SendFile(FILE *file, unsigned int destination, unsigned int deviceType, unsigned int fileIdentifier) const
+bool BridgeManager::SendFile(FILE *file, uint32_t destination, uint32_t deviceType, uint32_t fileIdentifier) const
 {
 	if (destination != EndFileTransferPacket::kDestinationModem && destination != EndFileTransferPacket::kDestinationPhone)
 	{
@@ -1029,7 +1029,7 @@ bool BridgeManager::SendFile(FILE *file, unsigned int destination, unsigned int 
 	}
 
 	FileSeek(file, 0, SEEK_END);
-	unsigned long fileSize = (unsigned long)FileTell(file);
+	uint64_t fileSize = (uint64_t)FileTell(file);
 	FileRewind(file);
 
 	ResponsePacket *fileTransferResponse = new ResponsePacket(ResponsePacket::kResponseTypeFileTransfer);
@@ -1042,31 +1042,31 @@ bool BridgeManager::SendFile(FILE *file, unsigned int destination, unsigned int 
 		return (false);
 	}
 
-	unsigned int sequenceCount = fileSize / (fileTransferSequenceMaxLength * fileTransferPacketSize);
-	unsigned int lastSequenceSize = fileTransferSequenceMaxLength;
-	unsigned int partialPacketByteCount = fileSize % fileTransferPacketSize;
+	uint32_t sequenceCount = fileSize / (fileTransferSequenceMaxLength * fileTransferPacketSize);
+	uint32_t lastSequenceSize = fileTransferSequenceMaxLength;
+	uint32_t partialPacketByteCount = fileSize % fileTransferPacketSize;
 
 	if (fileSize % (fileTransferSequenceMaxLength * fileTransferPacketSize) != 0)
 	{
 		sequenceCount++;
 
-		unsigned int lastSequenceBytes = fileSize % (fileTransferSequenceMaxLength * fileTransferPacketSize);
+		uint32_t lastSequenceBytes = fileSize % (fileTransferSequenceMaxLength * fileTransferPacketSize);
 		lastSequenceSize = lastSequenceBytes / fileTransferPacketSize;
 
 		if (partialPacketByteCount != 0)
 			lastSequenceSize++;
 	}
 
-	unsigned long bytesTransferred = 0;
-	unsigned int currentPercent;
-	unsigned int previousPercent = 0;
+	uint64_t bytesTransferred = 0;
+	uint32_t currentPercent;
+	uint32_t previousPercent = 0;
 	Interface::Print("0%%");
 
-	for (unsigned int sequenceIndex = 0; sequenceIndex < sequenceCount; sequenceIndex++)
+	for (uint32_t sequenceIndex = 0; sequenceIndex < sequenceCount; sequenceIndex++)
 	{
 		bool isLastSequence = (sequenceIndex == sequenceCount - 1);
-		unsigned int sequenceSize = (isLastSequence) ? lastSequenceSize : fileTransferSequenceMaxLength;
-		unsigned int sequenceTotalByteCount = sequenceSize * fileTransferPacketSize;
+		uint32_t sequenceSize = (isLastSequence) ? lastSequenceSize : fileTransferSequenceMaxLength;
+		uint32_t sequenceTotalByteCount = sequenceSize * fileTransferPacketSize;
 
 		FlashPartFileTransferPacket *beginFileTransferPacket = new FlashPartFileTransferPacket(sequenceTotalByteCount);
 		success = SendPacket(beginFileTransferPacket);
@@ -1090,7 +1090,7 @@ bool BridgeManager::SendFile(FILE *file, unsigned int destination, unsigned int 
 			return (false);
 		}
 
-		for (unsigned int filePartIndex = 0; filePartIndex < sequenceSize; filePartIndex++)
+		for (uint32_t filePartIndex = 0; filePartIndex < sequenceSize; filePartIndex++)
 		{
 			// NOTE: This empty transfer thing is entirely ridiculous, but sadly it seems to be required.
 			int sendEmptyTransferFlags = (filePartIndex == 0) ? kEmptyTransferNone : kEmptyTransferBefore;
@@ -1139,7 +1139,7 @@ bool BridgeManager::SendFile(FILE *file, unsigned int destination, unsigned int 
 					// Response
 					sendFilePartResponse = new SendFilePartResponse();
 					success = ReceivePacket(sendFilePartResponse);
-					unsigned int receivedPartIndex = sendFilePartResponse->GetPartIndex();
+					uint32_t receivedPartIndex = sendFilePartResponse->GetPartIndex();
 
 					delete sendFilePartResponse;
 
@@ -1170,7 +1170,7 @@ bool BridgeManager::SendFile(FILE *file, unsigned int destination, unsigned int 
 			if (bytesTransferred > fileSize)
 				bytesTransferred = fileSize;
 
-			currentPercent = (unsigned int)(100.0 * ((double)bytesTransferred / (double)fileSize));
+			currentPercent = (uint32_t)(100.0 * ((double)bytesTransferred / (double)fileSize));
 
 			if (currentPercent != previousPercent)
 			{
@@ -1190,7 +1190,7 @@ bool BridgeManager::SendFile(FILE *file, unsigned int destination, unsigned int 
 			previousPercent = currentPercent;
 		}
 
-		unsigned int sequenceEffectiveByteCount = (isLastSequence && partialPacketByteCount != 0) ?
+		uint32_t sequenceEffectiveByteCount = (isLastSequence && partialPacketByteCount != 0) ?
 			fileTransferPacketSize * (lastSequenceSize - 1) + partialPacketByteCount : sequenceTotalByteCount;
 
 		if (destination == EndFileTransferPacket::kDestinationPhone)

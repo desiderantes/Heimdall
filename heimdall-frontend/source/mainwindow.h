@@ -28,7 +28,7 @@
 #include <QTemporaryFile>
 
 // libpit
-#include "libpit.h"
+#include "libpit/libpit.h"
 
 // Heimdall Frontend
 #include "aboutform.h"
@@ -100,7 +100,7 @@ namespace HeimdallFrontend
 			PackageData workingPackageData;
 
 			bool populatingPartitionNames;
-			QList<unsigned int> unusedPartitionIds;
+			QList<uint32_t> unusedPartitionIds;
 
 			bool verboseOutput;
 			bool resume;
@@ -128,7 +128,7 @@ namespace HeimdallFrontend
 
 		public:
 
-			explicit MainWindow(QWidget *parent = 0);
+			explicit MainWindow(QWidget *parent = nullptr);
 			~MainWindow();
 
 		public slots:
